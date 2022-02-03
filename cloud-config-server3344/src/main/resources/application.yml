@@ -1,0 +1,42 @@
+server:
+  port: 3344
+
+spring:
+  application:
+    name: cloud-config-server
+  cloud:
+    config:
+      server:
+        git:
+          # GitHub仓库
+          # 疑问：HTTP方式成功，但是SSH方式连接没有成功，报Auth fail，按照官网生成PEM格式的key也不行
+          # uri: git@github.com:lostship/springcloud-config-sample.git
+          # uri: https://github.com/lostship/springcloud-config-sample.git
+          uri: https://gitee.com/skyhighblue/springcloud-config-sample.git
+          # 搜索目录
+          search-paths:
+          - springcloud-config-sample
+          # uri: file://D:/workspace/test/springcloud-config-sample # GtHub网络不同，暂时用本地仓库测试
+      # 读取URI省略label时的默认读取分支
+      # /{application}/{profile}[/{label}]
+      # /{application}-{profile}.yml
+      # /{label}/{application}-{profile}.yml
+      # /{application}-{profile}.properties
+      # /{label}/{application}-{profile}.properties
+      label: master
+
+eureka:
+  instance:
+    instanceId: ${spring.application.name}:${vcap.application.instance_id:${spring.application.instance_id:${random.value}}}
+    prefer-ip-address: true
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
+      defaultZone: http://eureka7001.sample.com:7001/eureka/,
+                   http://eureka7002.sample.com:7002/eureka/,
+                   http://eureka7003.sample.com:7003/eureka/
+
+logging:
+  level:
+    root: info

@@ -1,0 +1,23 @@
+server:
+  port: 80
+
+spring:
+  application:
+    name: cloud-consumer-order
+  cloud:
+    # nacos服务注册发现配置
+    nacos:
+      discovery:
+        # Nacos集群SLB入口地址，使用VIP/Nginx时还需要使用TCP转发暴露偏移量1000的端口用于客户端gRPC请求服务端
+        server-addr: 192.168.1.102:8800 # 本例使用端口8800，客户端还会gRCP请求服务端9800端口
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include:
+        - nacos-discovery # Nacos Discovery提供的Endpoint
+
+logging:
+  level:
+    root: info

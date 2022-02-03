@@ -1,0 +1,30 @@
+# 由于需要在启动前先从配置中心获取公共配置信息，因此eureka、config的相关配置需要写在bootstrap.yml中
+# bootstrap.yml比application.yml先加载，bootstrap.yml中的配置优先级高于application.yml。
+# SpringCloud会创建一个"Bootstrap Context"，作为Spring应用"ApplicationContext"的父上下文。
+# 初始化时"Bootstrap Context"负责从外部源加载并解析配置，这两个上下文共享一个从外部获取的"Environment"。
+
+server:
+  port: 3355
+
+spring:
+  application:
+    name: cloud-config-client
+  cloud:
+    nacos:
+      # Nacos Config中一个配置包含：Group、DataId、配置内容等属性
+      # Nacos Config使用namespace、Group和DataId确定一个配置
+      # Nacos Config在加载配置的时候不仅加载了DataId为${prefix}.${file-extension}的基础配置
+      # 还加载了DataId为${prefix}-${profile}.${file-extension}的基础配置
+      # 在日常开发中如果遇到多套环境下的不同配置，可以通过${spring.profiles.active}这个配置项来配置
+      # Nacos Config支持自动刷新，需要刷新的Bean组件需要添加@RefreshScope注解
+      config:
+        # Nacos集群SLB入口地址，使用VIP/Nginx时还需要使用TCP转发暴露偏移量1000的端口用于客户端gRPC请求服务端
+        server-addr: 192.168.1.102:8800 # 本例使用端口8800，客户端还会gRCP请求服务端9800端口
+        # namespace:  # 命名空间ID，默认使用public保留空间，用于配置隔离，不同namespace下可以存在相同的Group和DataId
+        # group:  # 默认是DEFAULT_GROUP
+        # prefix: # 默认是${spring.application.name}
+        file-extension: yml # 默认为properties，可以设置支持yaml格式
+
+logging:
+  level:
+    root: info

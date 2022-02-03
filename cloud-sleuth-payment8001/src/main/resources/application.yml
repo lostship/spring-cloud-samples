@@ -1,0 +1,28 @@
+server:
+  port: 8001
+
+spring:
+  application:
+    name: cloud-provider-payment
+  # sleuth整合了zipkin
+  zipkin:
+    base-url: http://192.168.1.7:9411 # zipkin监控服务地址
+  sleuth:
+    sampler:
+      probability: 1 # 采样率，值为[0,1]，1表示全部采集
+
+eureka:
+  instance:
+    instanceId: ${spring.application.name}:${vcap.application.instance_id:${spring.application.instance_id:${random.value}}}
+    prefer-ip-address: true
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
+      defaultZone: http://eureka7001.sample.com:7001/eureka/,
+                   http://eureka7002.sample.com:7002/eureka/,
+                   http://eureka7003.sample.com:7003/eureka/
+
+logging:
+  level:
+    root: info

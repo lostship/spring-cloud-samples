@@ -1,0 +1,62 @@
+spring:
+  profiles:
+    active:
+    - p7001
+
+eureka:
+  client:
+    # false表示不向注册中心注册自己
+    register-with-eureka: false
+    # false表示不需要从注册中心获取服务信息，因为自己就是注册中心
+    fetch-registry: false
+    service-url:
+      # 设置与eureka server交互的地址，获取和注册服务信息都需要这个地址
+      # 单机：可以不写，也可以写自己（By default, every Eureka server is also a Eureka client and requires (at least one) service URL to locate a peer. If you do not provide it, the service runs and works, but it fills your logs with a lot of noise about not being able to register with the peer.）
+      # defaultZone: http://${eureka.instance.hostname}:${server.port}/eureka/
+      # 集群：peers相互注册
+      defaultZone: http://eureka7001.sample.com:7001/eureka/,
+                   http://eureka7002.sample.com:7002/eureka/,
+                   http://eureka7003.sample.com:7003/eureka/
+
+logging:
+  level:
+    root: info
+
+---
+
+spring:
+  profiles: p7001
+
+server:
+  port: 7001
+
+eureka:
+  instance:
+    # euraka服务端的实例名称，集群环境下不能冲突
+    hostname: eureka7001.sample.com
+
+---
+
+spring:
+  profiles: p7002
+
+server:
+  port: 7002
+
+eureka:
+  instance:
+    # euraka服务端的实例名称，集群环境下不能冲突
+    hostname: eureka7002.sample.com
+
+---
+
+spring:
+  profiles: p7003
+
+server:
+  port: 7003
+
+eureka:
+  instance:
+    # euraka服务端的实例名称，集群环境下不能冲突
+    hostname: eureka7003.sample.com

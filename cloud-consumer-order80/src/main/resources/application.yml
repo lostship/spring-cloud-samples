@@ -1,0 +1,21 @@
+server:
+  port: 80
+
+spring:
+  application:
+    name: cloud-consumer-order
+
+eureka:
+  client:
+    # 自己只作为服务消费者，不被其它服务调用，可以不用注册进eureka注册中心
+    register-with-eureka: false
+    # 从eureka注册中心获取服务信息，单节点无所谓，集群必须设置为true才能配合ribbon使用负载均衡
+    fetch-registry: true
+    service-url:
+      defaultZone: http://eureka7001.sample.com:7001/eureka/,
+                   http://eureka7002.sample.com:7002/eureka/,
+                   http://eureka7003.sample.com:7003/eureka/
+
+logging:
+  level:
+    root: info

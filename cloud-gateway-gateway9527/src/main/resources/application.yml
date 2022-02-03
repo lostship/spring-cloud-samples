@@ -1,0 +1,45 @@
+server:
+  port: 9527
+
+spring:
+  application:
+    # 注册进注册中心的名称
+    name: cloud-gateway
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          enabled: true # 开启注册中心服务发现，以便支持动态路由
+      # 配置文件方式配置gateway路由规则，也可以用编码方式配置
+      # 疑问：路由规则好像不按照路径最精确匹配，匹配生效顺序是怎么样的？
+      routes:
+      - id: cloud-provider-payment # 路由规则ID，没有固定规则，但是要求唯一
+        # 匹配后提供服务的路由地址
+        # 静态路由：http://<ip>:<port>
+        # 动态路由：lb://<application-name>能够根据注册中心服务信息进行负载均衡
+        uri: lb://cloud-provider-payment/lb
+         # 断言规则，路径匹配的进行路由，如果有多个断言规则，他们按照"and"的关系生效
+        predicates:
+        - Path=/payment/**
+      - id: cloud-provider-payment-acturator
+        uri: lb://cloud-provider-payment/lb
+         # 断言规则，路径匹配的进行路由，如果有多个断言规则，他们按照"and"的关系生效
+        predicates:
+        - Path=/payment/actuator/**
+        filters:        - StripPrefix=1
+
+eureka:
+  instance:
+    instanceId: ${spring.application.name}:${vcap.application.instance_id:${spring.application.instance_id:${random.value}}}
+    prefer-ip-address: true
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
+      defaultZone: http://eureka7001.sample.com:7001/eureka/,
+                   http://eureka7002.sample.com:7002/eureka/,
+                   http://eureka7003.sample.com:7003/eureka/
+
+logging:
+  level:
+    root: info

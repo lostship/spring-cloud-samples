@@ -1,0 +1,65 @@
+server:
+  port: 3344
+
+spring:
+  application:
+    name: cloud-config-server
+  cloud:
+    config:
+      server:
+        git:
+          # GitHub仓库
+          # 疑问：HTTP方式成功，但是SSH方式连接没有成功，报Auth fail，按照官网生成PEM格式的key也不行
+          # uri: git@github.com:lostship/springcloud-config-sample.git
+          # uri: https://github.com/lostship/springcloud-config-sample.git
+          uri: https://gitee.com/skyhighblue/springcloud-config-sample.git
+          # 搜索目录
+          search-paths:
+          - springcloud-config-sample
+          # uri: file://D:/workspace/test/springcloud-config-sample # GtHub网络不同，暂时用本地仓库测试
+      # 读取URI省略label时的默认读取分支
+      # /{application}/{profile}[/{label}]
+      # /{application}-{profile}.yml
+      # /{label}/{application}-{profile}.yml
+      # /{application}-{profile}.properties
+      # /{label}/{application}-{profile}.properties
+      label: master
+  # 使用Spring Cloud Bus消息总线（RabbitMQ版），RabbitMQ相关配置
+  # Spring Cloud Bus消息总线所有节点默认都会监控MQ中的同一个Topic（默认是SpringCloudBus）  rabbitmq:
+    host: 192.168.1.7
+    port: 5672
+    virtual-host: /
+    username: guest
+    password: guest
+
+# 暴露Spring Cloud Bus消息总线提供的bus-refresh刷新配置端点
+# 修改配置后，只需要向注册中心发送"curl -X POST http://localhost:3344/actuator/bus-refresh"
+# 注册中心就会通过Bus向MQ的Topic（默认是SpringCloudBus）发送触发配置更新Message，
+# 广播通知所有client节点从注册中心获取最新的配置
+#
+# 也可以不使用广播，而是指定通知某个具体的client节点进行刷新，还是向注册中心发送
+# "curl -X POST http://localhost:3344/actuator/bus-refresh/<client application name>:<port>"
+# 例如只通知本例中spring.application.name=cloud-config-client，port=3355的节点
+# "curl -X POST http://localhost:3344/actuator/bus-refresh/cloud-config-client:3355"
+# 如果集群中还有其它client节点，就不会触发刷新，只会刷新cloud-config-client:3355这个client节点
+management:
+  endpoints:
+    web:
+      exposure:
+        include: bus-refresh
+
+eureka:
+  instance:
+    instanceId: ${spring.application.name}:${vcap.application.instance_id:${spring.application.instance_id:${random.value}}}
+    prefer-ip-address: true
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
+      defaultZone: http://eureka7001.sample.com:7001/eureka/,
+                   http://eureka7002.sample.com:7002/eureka/,
+                   http://eureka7003.sample.com:7003/eureka/
+
+logging:
+  level:
+    root: info

@@ -1,0 +1,51 @@
+server:
+  port: 8802
+
+spring:
+  application:
+    name: cloud-stream-consumer
+  cloud:
+    # Spring Cloud Stream通过Binder对象，屏蔽底层消息中间件的差异，降低切换成本，统一消息的编程模型
+    # 生产者->source->output通道->Binder层->MQ->Binder层->input通道->sink->消费者
+    stream:
+      binders: # Stream通过Binder对象隔离应用和消息中间件
+        myRabbitBinder: # 自定义Binder的名称，用于binding操作进行Channel绑定
+          type: rabbit # 对接的消息中间件类型
+          environment: # 对接的消息中间件相关环境配置
+            spring:
+              rabbitmq:
+                host: 192.168.1.7
+                port: 5672
+                virtual-host: /
+                username: guest
+                password: guest
+      bindings: # 绑定通道，通道分为output（发送）、input（接收）两类
+        input: # 通道名称（这里能自定义么？@Sink注解中写死的input是什么意思？）
+          binder: myRabbitBinder # 通道要绑定的消息服务Binder
+          destination: myStreamExchange # Rabbit的Exchange名称
+          content-type: application/json # 消息类型，文本则设置text/plain
+          group: myGroupA # 消费者分组
+          # group是一个非常重要的属性，可以解决如下问题：
+          # 1、消息重复消费问题
+          #   多个consumer设置成相同分组，会订阅同一个queue，防止消息重复消费
+          #   一条消息可以被多个分组消费，但是在同一分组内只会被一个消费者消费
+          # 2、消息持久化
+          #   如果不设置group，consumer服务发生宕机重启，在宕机期间如果生产者向MQ发送了消息
+          #   当consumer重启后，将会无法消费到宕机期间产生的消息，造成消息丢失
+          #   只要设置了group，重启后就能够消费到启动前产生的消息
+
+eureka:
+  instance:
+    instanceId: ${spring.application.name}:${vcap.application.instance_id:${spring.application.instance_id:${random.value}}}
+    prefer-ip-address: true
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
+      defaultZone: http://eureka7001.sample.com:7001/eureka/,
+                   http://eureka7002.sample.com:7002/eureka/,
+                   http://eureka7003.sample.com:7003/eureka/
+
+logging:
+  level:
+    root: info

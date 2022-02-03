@@ -1,0 +1,42 @@
+server:
+  port: 8801
+
+spring:
+  application:
+    name: cloud-stream-consumer
+  cloud:
+    # Spring Cloud Stream通过Binder对象，屏蔽底层消息中间件的差异，降低切换成本，统一消息的编程模型
+    # 生产者->source->output通道->Binder层->MQ->Binder层->input通道->sink->消费者
+    stream:
+      binders: # Stream通过Binder对象隔离应用和消息中间件
+        myRabbitBinder: # 自定义Binder的名称，用于binding操作进行Channel绑定
+          type: rabbit # 对接的消息中间件类型
+          environment: # 对接的消息中间件相关环境配置
+            spring:
+              rabbitmq:
+                host: 192.168.1.7
+                port: 5672
+                virtual-host: /
+                username: guest
+                password: guest
+      bindings: # 绑定通道，通道分为output（发送）、input（接收）两类
+        output: # 通道名称（这里能自定义么？@Source注解中写死的output是什么意思？）
+          binder: myRabbitBinder # 通道要绑定的消息服务Binder
+          destination: myStreamExchange # Rabbit的Exchange名称
+          content-type: application/json # 消息类型，文本则设置text/plain
+
+eureka:
+  instance:
+    instanceId: ${spring.application.name}:${vcap.application.instance_id:${spring.application.instance_id:${random.value}}}
+    prefer-ip-address: true
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
+      defaultZone: http://eureka7001.sample.com:7001/eureka/,
+                   http://eureka7002.sample.com:7002/eureka/,
+                   http://eureka7003.sample.com:7003/eureka/
+
+logging:
+  level:
+    root: info

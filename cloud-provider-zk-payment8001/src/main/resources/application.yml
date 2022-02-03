@@ -1,0 +1,16 @@
+server:
+  port: 8004
+
+spring:
+  application:
+    name: cloud-provider-payment
+  cloud:
+    zookeeper:
+      connect-string: 192.168.1.7:2181
+      discovery:
+        preferIpAddress: true
+        instanceIpAddress: 192.168.1.6
+
+logging:
+  level:
+    root: info

@@ -1,0 +1,46 @@
+# 由于需要在启动前先从配置中心获取公共配置信息，因此eureka、config的相关配置需要写在bootstrap.yml中
+# bootstrap.yml比application.yml先加载，bootstrap.yml中的配置优先级高于application.yml。
+# SpringCloud会创建一个"Bootstrap Context"，作为Spring应用"ApplicationContext"的父上下文。
+# 初始化时"Bootstrap Context"负责从外部源加载并解析配置，这两个上下文共享一个从外部获取的"Environment"。
+
+server:
+  port: 3355
+
+spring:
+  application:
+    name: cloud-config-client
+  cloud:
+    config:
+      discovery: # 开启注册中心服务发现，以便获取配置中心服务信息
+        enabled: true
+        service-id: cloud-config-server
+      uri: http://cloud-config-server # 配置中心地址
+      label: master # 读取分支
+      name: config # 配置文件名称
+      profile: dev # 配置文件环境后缀
+
+# 暴露actuator的refresh端点，配合@RefreshScope注解，用于动态刷新配置
+# 修改配置后，需要运维额外手动发送请求：curl -X POST "http://localhost:3355/actuator/refresh"
+# 能够免重启手动从配置中心更新配置信息，但是在大规模集群下逐个节点刷新是不可行的
+# 如果要实现广播通知批量刷新、灰度刷新等更高级的运维功能，就需要配合消息总线Bus管理
+management:
+  endpoints:
+    web:
+      exposure:
+        include: refresh
+
+eureka:
+  instance:
+    instanceId: ${spring.application.name}:${vcap.application.instance_id:${spring.application.instance_id:${random.value}}}
+    prefer-ip-address: true
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
+      defaultZone: http://eureka7001.sample.com:7001/eureka/,
+                   http://eureka7002.sample.com:7002/eureka/,
+                   http://eureka7003.sample.com:7003/eureka/
+
+logging:
+  level:
+    root: info
