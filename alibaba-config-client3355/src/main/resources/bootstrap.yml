@@ -19,7 +19,7 @@ spring:
       # Nacos Config支持自动刷新，需要刷新的Bean组件需要添加@RefreshScope注解
       config:
         # Nacos集群SLB入口地址，使用VIP/Nginx时还需要使用TCP转发暴露偏移量1000的端口用于客户端gRPC请求服务端
-        server-addr: 192.168.1.102:8800 # 本例使用端口8800，客户端还会gRCP请求服务端9800端口
+        server-addr: 192.168.1.7:8800 # 本例使用端口8800，客户端还会gRCP请求服务端9800端口
         # namespace:  # 命名空间ID，默认使用public保留空间，用于配置隔离，不同namespace下可以存在相同的Group和DataId
         # group:  # 默认是DEFAULT_GROUP
         # prefix: # 默认是${spring.application.name}
