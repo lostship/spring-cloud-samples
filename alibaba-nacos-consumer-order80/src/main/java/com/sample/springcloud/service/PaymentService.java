@@ -9,13 +9,13 @@ import org.springframework.web.bind.annotation.RequestBody;
 import com.sample.springcloud.entity.CommonResult;
 import com.sample.springcloud.entity.Payment;
 
-@FeignClient(name = "cloud-provider-payment", path = "payment")
+@FeignClient(name = "cloud-provider-payment")
 public interface PaymentService {
 
-    @GetMapping("get/{id}")
+    @GetMapping("payment/get/{id}")
     CommonResult<Payment> getById(@PathVariable("id") Long id);
 
-    @PostMapping("create")
+    @PostMapping("payment/create")
     CommonResult<Payment> create(@RequestBody Payment payment);
 
 }

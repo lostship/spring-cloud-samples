@@ -5,10 +5,10 @@ import org.springframework.web.bind.annotation.GetMapping;
 
 import com.sample.springcloud.entity.CommonResult;
 
-@FeignClient(name = "cloud-provider-payment", path = "payment")
+@FeignClient(name = "cloud-provider-payment")
 public interface PaymentService {
 
-    @GetMapping("test")
+    @GetMapping("payment/test")
     CommonResult<Void> test();
 
 }

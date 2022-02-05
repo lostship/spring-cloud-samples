@@ -1,0 +1,48 @@
+server:
+  port: 80
+
+spring:
+  application:
+    name: cloud-consumer-order
+  cloud:
+    nacos:
+      discovery:
+        server-addr: 192.168.1.7:8800
+    sentinel:
+      # Sentinel控制台配置
+      transport:
+        dashboard: 192.168.1.7:8080 # 控制台地址，默认8080端口，可通过启动参数更改（-Dserver.port=8080）
+        # port: 8719 # 此端口配置会在应用的机器上启动一个Http Server与控制台交互，默认8719端口，如被占用会自动递增寻找可用端口
+      # 动态数据源
+      datasource:
+        ds1: # 名称随意
+          nacos: # 数据源类型，支持nacos、redis、zk等
+            server-addr: 192.168.1.7:8800 # Nacos Server地址
+            data-id: ${spring.application.name}-flow # 配置项自定义DataId，注意没有扩展名
+            group-id: SENTINEL_GROUP # 配置项自定义group
+            data-type: json # 配置项数据格式
+            rule-type: flow # 该数据源中的规则类型：flow、degrade、authority、system、param-flow、gw-flow、gw-api-group
+        ds2:
+          nacos:
+            server-addr: 192.168.1.7:8800
+            data-id: ${spring.application.name}-degrade
+            group-id: SENTINEL_GROUP
+            data-type: json
+            rule-type: degrade
+
+# 激活Sentinel对OpenFeign的支持
+feign:
+  sentinel:
+    enabled: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include:
+        - sentinel # 暴露sentinel的endpoint
+        - nacos-discovery
+
+logging:
+  level:
+    root: info
