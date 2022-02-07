@@ -37,5 +37,5 @@ spring:
     password: 123456
 
 mybatis:
-  mapperLocations: classpath:mapper/*.xml
-  type-aliases-package: com.atguigu.springcloud.entity
+  mapper-locations: classpath:mapper/*.xml
+  type-aliases-package: com.sample.springcloud.entity

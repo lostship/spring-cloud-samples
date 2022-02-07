@@ -34,6 +34,10 @@
         <module>alibaba-nacos-config-client3355</module>
         <module>alibaba-sentinel-provider-payment8001</module>
         <module>alibaba-sentinel-consumer-order80</module>
+        <module>alibaba-seata-business-service8001</module>
+        <module>alibaba-seata-storage-service</module>
+        <module>alibaba-seata-order-service</module>
+        <module>alibaba-seata-account-service</module>
     </modules>
 
     <properties>
