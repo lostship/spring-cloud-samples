@@ -19,17 +19,11 @@ Seata支持Nacos、Redis、Zookeeper等配置中心，本例使用Nacos。下载
 $ sh ./nacos-config.sh -h localhost -p 8848 -g SEATA_GROUP -t 5a3c7d6c-f497-4d68-a71a-2e5e3340b3ca -u username -w password
 
 Parameter Description:
-
 -h: host, the default value is localhost.
-
 -p: port, the default value is 8848.
-
 -g: Configure grouping, the default value is 'SEATA_GROUP'.
-
 -t: Tenant information, corresponding to the namespace ID field of Nacos, the default value is ''.
-
 -u: username, nacos 1.2.0+ on permission control, the default value is ''.
-
 -w: password, nacos 1.2.0+ on permission control, the default value is ''.
 ```
 
@@ -41,27 +35,26 @@ service.vgroupMapping.my_test_tx_group=default
 # 创建自己的事务分组-集群映射配置项
 service.vgroupMapping.<txGroup>=<clusterName>
 
-# 数据库连接信息等...
+# MySQL、Redis连接信息等...
 ```
 
 # 2 服务端（Seata Server）
 [server](https://github.com/seata/seata/tree/develop/script/server)
 
 1) 服务端数据库
-Seata TC需要使用数据库进行全局和分支事务管理，创建服务端数据库，并从官网下载导入初始化脚本：
+如果采用db模式（配置项store.mode=db），Seata TC需要使用数据库进行全局和分支事务管理，创建服务端数据库，并从官网下载导入初始化脚本：
 ```
 mysql> create database `seata` default character set utf8;
-
 mysql> -- 导入Server端数据库初始化脚本
 ```
 
 2) 配置文件
 服务端主要包含两个配置文件：
-- seata/config/registry.conf：服务注册和配置中心相关配置，`registry.type`和`config.type`默认值都是`"file"`，可以修改为`nacos`。
-- seata/config/file.conf：Seata全部配置项都在这里，如果registry.conf配置文件中的`config.type="file"`，则全部配置从本地file.conf配置文件中加载；如果`config.type`使用配置中心，则默认配置从配置中心加载，但是可以通过本地file.conf配置文件中的配置项来覆盖配置中心的对应配置项，进行定制化配置。
+- seata/config/registry.conf：服务注册和配置中心相关配置，`registry.type`和`config.type`默认值都是`file`，可以修改为`nacos`。
+- seata/config/file.conf：Seata全部配置项都在这里，如果registry.conf配置文件中的`config.type=file`，则全部配置从本地file.conf配置文件中加载；如果`config.type`使用配置中心，则默认配置从配置中心加载，但是可以通过本地file.conf配置文件中的配置项来覆盖配置中心的对应配置项，进行定制化配置。
 
 主要修改：
-- registry.conf中的服务注册和配置中心从`"file"`修改为`"nacos"`，并配置Nacos相关信息
+- registry.conf中的服务注册和配置中心从`file`修改为`nacos`，并配置Nacos相关信息
 - 配置中心根据实际情况修改`store.mode=db`，以及seata服务端数据库连接相关信息
 
 3) 启动Seata Server端
@@ -99,17 +92,17 @@ seata:
       server-addr: 192.168.1.7:8800
       group : SEATA_GROUP # 注意和服务端以及配置中心保持一致
       application: seata-server # 默认Seata服务端注册名称是seata-server
-      # namespace:  # 注意和服务端以及配置中心保持一致
-      # username: ""
-      # password: ""
+      namespace:  # 注意和服务端以及配置中心保持一致
+      username: ""
+      password: ""
   config:
     type: nacos
     nacos:
       serverAddr: 192.168.1.7:8800
       group: SEATA_GROUP  # 注意和服务端以及配置中心保持一致
-      # namespace:  # 注意和服务端以及配置中心保持一致
-      # username: ""
-      # password: ""
+      namespace:  # 注意和服务端以及配置中心保持一致
+      username: ""
+      password: ""
 # 使用配置中心后默认配置从配置中心加载，也可以在此进行定制化配置
 #  client:
 #    rm:
@@ -166,3 +159,22 @@ feign:
 
 3) 编码
 在业务Service层方法上使用`@GlobalTransactional`注解声明开启全局事务。
+
+# 4 通过DataId配置（新版本特性）
+从Seata v1.4.2版本开始，已支持从一个Nacos配置项中获取所有配置信息。
+首先需要在Nacos中新建配置项，此处假设指定DataId为seata-server.properties，配置内容参考最新版config.txt按需修改并保存。
+之后在Seata Server/Client端配置中心配置处参考如下配置进行修改：
+```
+seata:
+  config:
+    type: nacos
+    nacos:
+      server-addr: 192.168.1.7:8800
+      group: SEATA_GROUP
+      namespace:
+      username: ""
+      password: ""
+
+      # 新增属性，如果使用一个配置项保存所有配置，需要指明配置项的DataId，如果还是使用多个配置项方式则不需要该属性
+      data-id: seata-server.properties
+```
